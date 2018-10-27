@@ -1,0 +1,26 @@
+{
+  "name": "mysqlamazon",
+  "version": "1.0.0",
+  "description": "A faux amazon using mysql and js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DMBarnett/mySQLAmazon.git"
+  },
+  "keywords": [
+    "mysql"
+  ],
+  "author": "David Barnett",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DMBarnett/mySQLAmazon/issues"
+  },
+  "homepage": "https://github.com/DMBarnett/mySQLAmazon#readme",
+  "dependencies": {
+    "inquirer": "^6.2.0",
+    "mysql": "^2.16.0"
+  }
+}
