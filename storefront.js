@@ -5,14 +5,14 @@ var connection = mysql.createConnection({
     host: "localhost",
   
     // Your port
-    port: 8000,
+    port: 3306,
   
     // Your username
     user: "root",
   
     // Your password
-    password: "1111",
-    database: "amazonStore"
+    password: "password",
+    database: "amazonstore"
 });
 
 connection.connect(function(err) {
@@ -24,25 +24,42 @@ connection.connect(function(err) {
 //Global to save the username once passed in from the login function
 var loggedIn = "";
 var users = [];
+var adminUsers = [];
 
 //Pulls all users from database when called
-function userFuncArr(){
+function userFuncArr(input){
     connection.query("SELECT * FROM users", function(err, results){
         if(err) throw err;
+        console.log("\n\n");
         for (var i = 0; i < results.length; i++) {
             users.push(results[i].name);
         }
-        return users;
+        users.forEach(each =>{
+            if(each === input.name){
+                loggedIn = input.name;
+                userFunctions()
+            }
+        })
+        console.log("Incorrect Username");
+        connection.end()
     })
 }
-//pulls admin usernames from database
-function adminFuncArr(){
-    connection.query("SELECT * FROM admin", function(err, results){
+
+
+//pulls admin usernames from database and checks against inputs 
+function adminFuncArr(input){
+    connection.query("SELECT * FROM admin_users", function(err, results){
         if(err) throw err;
+        console.log("\n\n");
         for (var i = 0; i < results.length; i++) {
-            users.push(results[i].name);
+            adminUsers.push(results[i].adminName);
         }
-        return users;
+        adminUsers.forEach(each =>{
+            if(each === input.name){
+                loggedIn = input.name;
+                adminFunctions()
+            }
+        })
     })
 }
 
@@ -61,45 +78,14 @@ function login(){
             choices:["Admin","User"]
         }
     ]).then(function(res){
-        nameLogin(res);
+        if(res.choice === "Admin"){
+            adminFuncArr(res);
+        }else{
+            userFuncArr(res);
+        }
     })
 }
 
-//Checks login name against array of usernames
-function nameLogin(input){
-    if(input.choice === "Admin"){
-        var users = []
-        adminFuncArr();
-        users.forEach(element =>{
-            if(element === input.name){
-                loggedIn = input.name;
-            }
-        })
-        //reruns login if user not found
-        if(loggedIn){
-            console.log("Thats an incorrect Admin name");
-            login();
-        }else{
-            //otherwise goes into a users options
-            adminFunctions()
-        }
-    }else {
-        var users = []
-        userFuncArr();
-        users.forEach(element =>{
-            if(element === input.name){
-                loggedIn = input.name;
-            }
-        })
-        if(loggedIn){
-            console.log("Thats an incorrect User name");
-            login();
-        }else{
-            userFunctions()
-        }
-    }
-
-}
 
 //Abilities of an Admin
 //Also functions as the home screen, after executing a module of Admin returns here
@@ -115,9 +101,10 @@ function adminFunctions(){
                 "Add New Product",
                 "Logout"
             ],
-            message:"\nWhat would you like to do?\n"
+            message:"What would you like to do?"
         }
     ]).then(function(res){
+        console.log("peach");
         if(res.options === "View Products for Sale"){
             logProductsToScreen("all")
         }else if(res.options === "View Low Inventory"){
@@ -137,7 +124,7 @@ function userFunctions(){
         {
             name:"choice",
             type:"list",
-            message:"What would you like to do?\n",
+            message:"\nWhat would you like to do?\n",
             choices: ["Buy from inventory","Look at purchase history","Logout"]
         }
     ]).then(function(res){
@@ -152,7 +139,44 @@ function userFunctions(){
 }
 
 function purchase(){
-    connection.query()
+    connection.query("SELECT * FROM products", function(err, res){
+        if(err) throw err;
+        inquirer.prompt([
+            {
+                type:"list",
+                name:"choice",
+                message:"Which would you like to purchase?",
+                choices: function(){
+                    var choiceArray = [];
+                    for (var i = 0; i < results.length; i++) {
+                        // console.log(results[i]);
+                        
+                        choiceArray.push(results[i].item_id.toString());
+                    }
+                    // console.log(choiceArray);
+                    return choiceArray;
+                },
+            },{
+                type:"input",
+                name:"quantity",
+                message:"How many would you like to purchase?"
+            }
+        ]).then(function(results){
+            var chosen = {};
+            res.forEach(element =>{
+                if(element.name === results.choice){
+                    chosen = element;
+                    console.log(chosen);
+                }
+            })
+            if(results.quantity > chosen.stock_quantity){
+                console.log(`\nThat's too many! We only have ${chosen.stock_quantity} available.`);
+                purchase();
+            }else{
+
+            }
+        })
+    })
 }
 
 
@@ -258,5 +282,3 @@ function newProduct(){
         adminFunctions();
     })
 }
-
-function 
